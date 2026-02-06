@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block title %}Clientes - Factoring System{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+    <a href="{% url 'dashboard' %}">Dashboard</a> /
+    <a href="{% url 'lista_clientes' %}">Clientes</a>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h2>Clientes</h2>
+    </div>
+    
+    <a href="{% url 'criar_cliente' %}" class="btn btn-success">+ Novo Cliente</a>
+    
+    <form method="get" style="margin-top: 15px;">
+        <div class="form-row">
+            <div class="form-group" style="margin-bottom: 0;">
+                <input type="text" name="nome" placeholder="Filtrar por nome..." value="{{ request.GET.nome }}">
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+                <input type="text" name="cpf_cnpj" placeholder="CPF/CNPJ..." value="{{ request.GET.cpf_cnpj }}">
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+                <select name="ativo">
+                    <option value="">Todos</option>
+                    <option value="true" {% if request.GET.ativo == 'true' %}selected{% endif %}>Ativos</option>
+                    <option value="false" {% if request.GET.ativo == 'false' %}selected{% endif %}>Inativos</option>
+                </select>
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+                <button type="submit" class="btn btn-primary">Filtrar</button>
+            </div>
+        </div>
+    </form>
+    
+    <p style="margin-top: 15px;">Total de clientes: <strong>{{ total }}</strong></p>
+    
+    {% if clientes %}
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Código</th>
+                <th>Nome</th>
+                <th>Tipo</th>
+                <th>CPF/CNPJ</th>
+                <th>Email</th>
+                <th>Limite Crédito</th>
+                <th>Status</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for cliente in clientes %}
+            <tr>
+                <td>{{ cliente.codigo }}</td>
+                <td>{{ cliente.nome }}</td>
+                <td>{{ cliente.get_tipo_pessoa_display }}</td>
+                <td>{{ cliente.cpf_cnpj }}</td>
+                <td>{{ cliente.email|default:'-' }}</td>
+                <td>R$ {{ cliente.limite_credito|floatformat:2 }}</td>
+                <td>
+                    {% if cliente.ativo %}
+                    <span style="color: green;">✓ Ativo</span>
+                    {% else %}
+                    <span style="color: red;">✗ Inativo</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <a href="{% url 'detalhe_cliente' cliente.codigo %}" class="btn btn-primary btn-small">Ver</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p style="margin-top: 20px; text-align: center; color: #7f8c8d;">Nenhum cliente encontrado.</p>
+    {% endif %}
+</div>
+{% endblock %}

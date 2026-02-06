@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block title %}Fluxo de Caixa - Factoring System{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+    <a href="{% url 'dashboard' %}">Dashboard</a> /
+    <a href="#">Relatórios</a> /
+    <span>Fluxo de Caixa</span>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h2>Relatório de Fluxo de Caixa</h2>
+    </div>
+    
+    <form method="get" style="padding: 20px;">
+        <div class="form-row">
+            <div class="form-group" style="margin-bottom: 0;">
+                <label style="margin-bottom: 4px;">Data Inicial</label>
+                <input type="date" name="data_inicio" value="{{ data_inicio }}">
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+                <label style="margin-bottom: 4px;">Data Final</label>
+                <input type="date" name="data_fim" value="{{ data_fim }}">
+            </div>
+            <div class="form-group" style="margin-bottom: 0; display: flex; align-items: flex-end;">
+                <button type="submit" class="btn btn-primary">Gerar Relatório</button>
+            </div>
+        </div>
+    </form>
+    
+    <div style="padding: 20px;">
+        <div class="stat-card" style="border-left-color: #27ae60;">
+            <h3>TOTAL RECEBIDO</h3>
+            <div class="value">R$ {{ total_recebido|floatformat:2 }}</div>
+        </div>
+    </div>
+    
+    {% if por_tipo %}
+    <div style="padding: 20px;">
+        <h3>Resumo por Tipo de Pagamento</h3>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Tipo de Pagamento</th>
+                    <th>Valor</th>
+                    <th>Percentual</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for tipo, valor in por_tipo.items %}
+                <tr>
+                    <td>{{ tipo }}</td>
+                    <td>R$ {{ valor|floatformat:2 }}</td>
+                    <td>{{ valor|add:0.00 }}%</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+    
+    {% if pagamentos %}
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Data do Pagamento</th>
+                <th>Documento</th>
+                <th>Tipo de Pagamento</th>
+                <th>Valor Pago</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for pagamento in pagamentos %}
+            <tr>
+                <td>{{ pagamento.data_pagamento|date:"d/m/Y" }}</td>
+                <td>{{ pagamento.documento.numero_documento }}</td>
+                <td>{{ pagamento.get_tipo_pagamento_display }}</td>
+                <td>R$ {{ pagamento.valor_pago|floatformat:2 }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p style="margin-top: 20px; text-align: center; color: #7f8c8d; padding: 0 20px;">Nenhum pagamento encontrado para este período.</p>
+    {% endif %}
+</div>
+{% endblock %}

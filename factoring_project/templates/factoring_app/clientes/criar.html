@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}Novo Cliente - Factoring System{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+    <a href="{% url 'dashboard' %}">Dashboard</a> /
+    <a href="{% url 'lista_clientes' %}">Clientes</a> /
+    <span>Novo Cliente</span>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h2>Novo Cliente</h2>
+    </div>
+    
+    <form method="post" style="padding: 20px;">
+        {% csrf_token %}
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label for="nome">Nome *</label>
+                <input type="text" id="nome" name="nome" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="tipo_pessoa">Tipo de Pessoa *</label>
+                <select id="tipo_pessoa" name="tipo_pessoa" required>
+                    <option value="">Selecione...</option>
+                    <option value="pf">Pessoa Física</option>
+                    <option value="pj">Pessoa Jurídica</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label for="cpf_cnpj">CPF/CNPJ *</label>
+                <input type="text" id="cpf_cnpj" name="cpf_cnpj" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email">
+            </div>
+            
+            <div class="form-group">
+                <label for="telefone">Telefone</label>
+                <input type="text" id="telefone" name="telefone" placeholder="(XX) XXXXX-XXXX">
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label for="endereco">Endereço</label>
+                <input type="text" id="endereco" name="endereco">
+            </div>
+            
+            <div class="form-group">
+                <label for="cidade">Cidade</label>
+                <input type="text" id="cidade" name="cidade">
+            </div>
+            
+            <div class="form-group">
+                <label for="estado">Estado</label>
+                <input type="text" id="estado" name="estado" maxlength="2" placeholder="SP">
+            </div>
+            
+            <div class="form-group">
+                <label for="cep">CEP</label>
+                <input type="text" id="cep" name="cep" placeholder="XXXXX-XXX">
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label for="limite_credito">Limite de Crédito</label>
+                <input type="number" id="limite_credito" name="limite_credito" step="0.01" min="0">
+            </div>
+        </div>
+        
+        <div style="margin-top: 30px;">
+            <button type="submit" class="btn btn-success">Salvar Cliente</button>
+            <a href="{% url 'lista_clientes' %}" class="btn btn-secondary">Cancelar</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

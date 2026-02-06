@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block title %}Borderos - Factoring System{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+    <a href="{% url 'dashboard' %}">Dashboard</a> /
+    <a href="{% url 'lista_borderos' %}">Borderos</a>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h2>Borderos de Cobrança</h2>
+    </div>
+    
+    <form method="get" style="margin-top: 15px; padding: 0 20px;">
+        <div class="form-row">
+            <div class="form-group" style="margin-bottom: 0;">
+                <input type="text" name="cliente" placeholder="Filtrar por cliente..." value="{{ request.GET.cliente }}">
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+                <select name="status">
+                    <option value="">Todos os Status</option>
+                    {% for value, label in status_choices %}
+                    <option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+                <button type="submit" class="btn btn-primary">Filtrar</button>
+            </div>
+        </div>
+    </form>
+    
+    <p style="margin-top: 15px; padding: 0 20px;">Total de borderos: <strong>{{ total }}</strong></p>
+    
+    {% if borderos %}
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Número</th>
+                <th>Cliente</th>
+                <th>Banco</th>
+                <th>Status</th>
+                <th>Quantidade de Títulos</th>
+                <th>Valor Total</th>
+                <th>Data de Criação</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for bordero in borderos %}
+            <tr>
+                <td>{{ bordero.numero }}</td>
+                <td>{{ bordero.cliente.nome }}</td>
+                <td>{{ bordero.banco.nome }}</td>
+                <td>
+                    <span style="background-color: 
+                        {% if bordero.status == 'novo' %}#3498db
+                        {% elif bordero.status == 'processando' %}#f39c12
+                        {% elif bordero.status == 'enviado' %}#9b59b6
+                        {% elif bordero.status == 'concluido' %}#27ae60
+                        {% else %}#e74c3c
+                        {% endif %};
+                        color: white;
+                        padding: 4px 8px;
+                        border-radius: 3px;
+                        font-size: 12px;"
+                    >{{ bordero.get_status_display }}</span>
+                </td>
+                <td>{{ bordero.quantidade_titulos }}</td>
+                <td>R$ {{ bordero.valor_total|floatformat:2 }}</td>
+                <td>{{ bordero.data_criacao|date:"d/m/Y H:i" }}</td>
+                <td><a href="{% url 'detalhe_bordero' bordero.id %}" class="btn btn-primary btn-small">Ver</a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p style="margin-top: 20px; text-align: center; color: #7f8c8d; padding: 0 20px;">Nenhum bordero encontrado.</p>
+    {% endif %}
+</div>
+{% endblock %}

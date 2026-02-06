@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% block title %}{{ cliente.nome }} - Factoring System{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+    <a href="{% url 'dashboard' %}">Dashboard</a> /
+    <a href="{% url 'lista_clientes' %}">Clientes</a> /
+    <span>{{ cliente.nome }}</span>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h2>{{ cliente.nome }}</h2>
+    </div>
+    
+    <div style="padding: 20px;">
+        <div class="form-row">
+            <div>
+                <strong>Código:</strong> {{ cliente.codigo }}
+            </div>
+            <div>
+                <strong>Tipo de Pessoa:</strong> {{ cliente.get_tipo_pessoa_display }}
+            </div>
+            <div>
+                <strong>Status:</strong>
+                {% if cliente.ativo %}
+                <span style="color: green;">✓ Ativo</span>
+                {% else %}
+                <span style="color: red;">✗ Inativo</span>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="form-row" style="margin-top: 20px;">
+            <div>
+                <strong>CPF/CNPJ:</strong> {{ cliente.cpf_cnpj }}
+            </div>
+            <div>
+                <strong>Email:</strong> {{ cliente.email|default:'-' }}
+            </div>
+            <div>
+                <strong>Telefone:</strong> {{ cliente.telefone|default:'-' }}
+            </div>
+        </div>
+        
+        <div class="form-row" style="margin-top: 20px;">
+            <div>
+                <strong>Limite de Crédito:</strong> R$ {{ cliente.limite_credito|floatformat:2 }}
+            </div>
+            <div>
+                <strong>Saldo Devedor:</strong> R$ {{ cliente.saldo_devedor|floatformat:2 }}
+            </div>
+        </div>
+        
+        <div style="margin-top: 30px;">
+            <a href="{% url 'lista_clientes' %}" class="btn btn-secondary">Voltar</a>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h2>Borderos do Cliente</h2>
+    </div>
+    
+    {% if borderos %}
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Número</th>
+                <th>Banco</th>
+                <th>Status</th>
+                <th>Data</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for bordero in borderos %}
+            <tr>
+                <td>{{ bordero.numero }}</td>
+                <td>{{ bordero.banco.nome }}</td>
+                <td>{{ bordero.get_status_display }}</td>
+                <td>{{ bordero.data_criacao|date:"d/m/Y H:i" }}</td>
+                <td><a href="{% url 'detalhe_bordero' bordero.id %}" class="btn btn-primary btn-small">Ver</a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p style="padding: 20px; text-align: center; color: #7f8c8d;">Nenhum bordero cadastrado para este cliente.</p>
+    {% endif %}
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h2>Sacados</h2>
+    </div>
+    
+    {% if sacados %}
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Nome</th>
+                <th>CPF/CNPJ</th>
+                <th>Email</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for sacado in sacados %}
+            <tr>
+                <td>{{ sacado.nome }}</td>
+                <td>{{ sacado.cpf_cnpj }}</td>
+                <td>{{ sacado.email|default:'-' }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p style="padding: 20px; text-align: center; color: #7f8c8d;">Nenhum sacado cadastrado.</p>
+    {% endif %}
+</div>
+{% endblock %}

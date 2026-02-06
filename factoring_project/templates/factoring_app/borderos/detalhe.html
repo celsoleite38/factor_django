@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+
+{% block title %}Bordero {{ bordero.numero }} - Factoring System{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+    <a href="{% url 'dashboard' %}">Dashboard</a> /
+    <a href="{% url 'lista_borderos' %}">Borderos</a> /
+    <span>{{ bordero.numero }}</span>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h2>Bordero {{ bordero.numero }}</h2>
+    </div>
+    
+    <div style="padding: 20px;">
+        <div class="form-row">
+            <div>
+                <strong>Cliente:</strong> {{ bordero.cliente.nome }}
+            </div>
+            <div>
+                <strong>Banco:</strong> {{ bordero.banco.nome }}
+            </div>
+            <div>
+                <strong>Status:</strong>
+                <span style="background-color: 
+                    {% if bordero.status == 'novo' %}#3498db
+                    {% elif bordero.status == 'processando' %}#f39c12
+                    {% elif bordero.status == 'enviado' %}#9b59b6
+                    {% elif bordero.status == 'concluido' %}#27ae60
+                    {% else %}#e74c3c
+                    {% endif %};
+                    color: white;
+                    padding: 4px 8px;
+                    border-radius: 3px;
+                    font-size: 12px;"
+                >{{ bordero.get_status_display }}</span>
+            </div>
+        </div>
+        
+        <div class="form-row" style="margin-top: 20px;">
+            <div>
+                <strong>Data de Criação:</strong> {{ bordero.data_criacao|date:"d/m/Y H:i" }}
+            </div>
+            <div>
+                <strong>Data de Envio:</strong> {{ bordero.data_envio|default:"-" }}
+            </div>
+            <div>
+                <strong>Data de Retorno:</strong> {{ bordero.data_retorno|default:"-" }}
+            </div>
+        </div>
+        
+        <div class="form-row" style="margin-top: 20px;">
+            <div>
+                <strong>Quantidade de Títulos:</strong> {{ bordero.quantidade_titulos }}
+            </div>
+            <div>
+                <strong>Valor Total:</strong> R$ {{ bordero.valor_total|floatformat:2 }}
+            </div>
+        </div>
+        
+        {% if bordero.observacoes %}
+        <div style="margin-top: 20px;">
+            <strong>Observações:</strong>
+            <p>{{ bordero.observacoes|linebreaks }}</p>
+        </div>
+        {% endif %}
+        
+        <div style="margin-top: 30px;">
+            <a href="{% url 'lista_borderos' %}" class="btn btn-secondary">Voltar</a>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h2>Documentos ({{ total_documentos }})</h2>
+    </div>
+    
+    {% if documentos %}
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Número do Documento</th>
+                <th>Sacado</th>
+                <th>Vencimento</th>
+                <th>Valor</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for documento in documentos %}
+            <tr>
+                <td>
+                    <a href="{% url 'detalhe_documento' documento.numero_sequencial %}">
+                        {{ documento.numero_documento }}
+                    </a>
+                </td>
+                <td>{{ documento.sacado.nome }}</td>
+                <td>{{ documento.data_vencimento|date:"d/m/Y" }}</td>
+                <td>R$ {{ documento.valor|floatformat:2 }}</td>
+                <td>{{ documento.get_status_display }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p style="padding: 20px; text-align: center; color: #7f8c8d;">Nenhum documento cadastrado para este bordero.</p>
+    {% endif %}
+</div>
+{% endblock %}

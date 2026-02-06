@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}Bancos - Factoring System{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+    <a href="{% url 'dashboard' %}">Dashboard</a> /
+    <a href="{% url 'lista_bancos' %}">Bancos</a>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h2>Bancos Cadastrados</h2>
+    </div>
+    
+    {% if bancos %}
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Código</th>
+                <th>Nome</th>
+                <th>Descrição</th>
+                <th>Data de Cadastro</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for banco in bancos %}
+            <tr>
+                <td>{{ banco.codigo }}</td>
+                <td>{{ banco.nome }}</td>
+                <td>{{ banco.descricao|truncatewords:10 }}</td>
+                <td>{{ banco.data_criacao|date:"d/m/Y H:i" }}</td>
+                <td><a href="{% url 'detalhe_banco' banco.id %}" class="btn btn-primary btn-small">Ver</a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p style="margin-top: 20px; text-align: center; color: #7f8c8d; padding: 0 20px;">Nenhum banco cadastrado.</p>
+    {% endif %}
+</div>
+{% endblock %}

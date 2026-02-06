@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Factoring System{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+    <a href="{% url 'dashboard' %}">Dashboard</a>
+</div>
+
+<h1>Bem-vindo, {{ user.get_full_name|default:user.username }}!</h1>
+
+<div class="stats">
+    <div class="stat-card">
+        <h3>Total de Clientes</h3>
+        <div class="value">{{ total_clientes }}</div>
+    </div>
+    
+    <div class="stat-card" style="border-left-color: #27ae60;">
+        <h3>Total de Borderos</h3>
+        <div class="value">{{ total_borderos }}</div>
+    </div>
+    
+    <div class="stat-card" style="border-left-color: #e74c3c;">
+        <h3>Total de Documentos</h3>
+        <div class="value">{{ total_documentos }}</div>
+    </div>
+    
+    <div class="stat-card" style="border-left-color: #f39c12;">
+        <h3>Valor Total Pendente</h3>
+        <div class="value">R$ {% widthratio valor_total_pendente 1 0 %}</div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h2>Alertas</h2>
+    </div>
+    
+    <table class="table">
+        <tr>
+            <td>⚠️ Documentos vencidos:</td>
+            <td><strong>{{ documentos_vencidos }}</strong> documento(s)</td>
+            <td><a href="{% url 'relatorio_pendencias' %}" class="btn btn-danger btn-small">Ver Detalhes</a></td>
+        </tr>
+    </table>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h2>Borderos Recentes</h2>
+    </div>
+    
+    {% if borderos_recentes %}
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Número</th>
+                <th>Cliente</th>
+                <th>Banco</th>
+                <th>Status</th>
+                <th>Data</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for bordero in borderos_recentes %}
+            <tr>
+                <td>{{ bordero.numero }}</td>
+                <td>{{ bordero.cliente.nome }}</td>
+                <td>{{ bordero.banco.nome }}</td>
+                <td>
+                    <span style="background-color: 
+                        {% if bordero.status == 'novo' %}#3498db
+                        {% elif bordero.status == 'processando' %}#f39c12
+                        {% elif bordero.status == 'enviado' %}#9b59b6
+                        {% elif bordero.status == 'concluido' %}#27ae60
+                        {% else %}#e74c3c
+                        {% endif %};
+                        color: white;
+                        padding: 4px 8px;
+                        border-radius: 3px;
+                        font-size: 12px;"
+                    >{{ bordero.get_status_display }}</span>
+                </td>
+                <td>{{ bordero.data_criacao|date:"d/m/Y H:i" }}</td>
+                <td><a href="{% url 'detalhe_bordero' bordero.id %}" class="btn btn-primary btn-small">Ver</a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>Nenhum bordero cadastrado ainda.</p>
+    {% endif %}
+</div>
+{% endblock %}

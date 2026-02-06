@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}Relatório de Clientes - Factoring System{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+    <a href="{% url 'dashboard' %}">Dashboard</a> /
+    <a href="#">Relatórios</a> /
+    <span>Clientes</span>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h2>Relatório de Clientes</h2>
+    </div>
+    
+    <div style="padding: 20px;">
+        <div class="stat-card" style="border-left-color: #3498db;">
+            <h3>TOTAL DE CLIENTES</h3>
+            <div class="value">{{ total_clientes }}</div>
+        </div>
+    </div>
+    
+    {% if clientes %}
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Código</th>
+                <th>Nome</th>
+                <th>Email</th>
+                <th>Limite de Crédito</th>
+                <th>Saldo Devedor</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for cliente in clientes %}
+            <tr>
+                <td>{{ cliente.codigo }}</td>
+                <td>{{ cliente.nome }}</td>
+                <td>{{ cliente.email|default:"-" }}</td>
+                <td>R$ {{ cliente.limite_credito|floatformat:2 }}</td>
+                <td>R$ {{ cliente.saldo_devedor|floatformat:2 }}</td>
+                <td><a href="{% url 'detalhe_cliente' cliente.codigo %}" class="btn btn-primary btn-small">Ver</a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p style="margin-top: 20px; text-align: center; color: #7f8c8d; padding: 0 20px;">Nenhum cliente cadastrado.</p>
+    {% endif %}
+</div>
+{% endblock %}

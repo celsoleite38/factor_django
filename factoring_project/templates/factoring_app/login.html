@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}Login - Factoring System{% endblock %}
+
+{% block content %}
+<div style="max-width: 400px; margin: 100px auto;">
+    <div class="card">
+        <div class="card-header">
+            <h2>Factoring System - Login</h2>
+        </div>
+        
+        <form method="post" style="padding: 20px;">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label for="username">Usuário:</label>
+                <input type="text" id="username" name="username" required autofocus>
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Senha:</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            
+            <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px;">Entrar</button>
+        </form>
+    </div>
+    
+    <p style="text-align: center; margin-top: 20px;">
+        Sistema de Factoring - Versão Django 1.0
+    </p>
+</div>
+{% endblock %}

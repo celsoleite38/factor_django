@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+
+{% block title %}Documento {{ documento.numero_documento }} - Factoring System{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+    <a href="{% url 'dashboard' %}">Dashboard</a> /
+    <a href="{% url 'lista_documentos' %}">Documentos</a> /
+    <span>{{ documento.numero_documento }}</span>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h2>Documento {{ documento.numero_documento }}</h2>
+    </div>
+    
+    <div style="padding: 20px;">
+        <div class="form-row">
+            <div>
+                <strong>Bordero:</strong> {{ documento.bordero.numero }}
+            </div>
+            <div>
+                <strong>Tipo de Documento:</strong> {{ documento.tipo_documento.descricao }}
+            </div>
+            <div>
+                <strong>Status:</strong> {{ documento.get_status_display }}
+            </div>
+        </div>
+        
+        <div class="form-row" style="margin-top: 20px;">
+            <div>
+                <strong>Sacado:</strong> {{ documento.sacado.nome }}
+            </div>
+            <div>
+                <strong>CPF/CNPJ:</strong> {{ documento.sacado.cpf_cnpj }}
+            </div>
+        </div>
+        
+        <div class="form-row" style="margin-top: 20px;">
+            <div>
+                <strong>Data de Emissão:</strong> {{ documento.data_emissao|date:"d/m/Y" }}
+            </div>
+            <div>
+                <strong>Data de Vencimento:</strong> {{ documento.data_vencimento|date:"d/m/Y" }}
+            </div>
+            <div>
+                <strong>Data de Desconto:</strong> {{ documento.data_desconto|default:"-" }}
+            </div>
+        </div>
+        
+        <div class="form-row" style="margin-top: 20px;">
+            <div>
+                <strong>Valor:</strong> R$ {{ documento.valor|floatformat:2 }}
+            </div>
+            <div>
+                <strong>Taxa de Desconto:</strong> {{ documento.taxa_desconto|floatformat:2 }}%
+            </div>
+            <div>
+                <strong>Valor de Desconto:</strong> R$ {{ documento.valor_desconto|floatformat:2 }}
+            </div>
+        </div>
+        
+        <div class="form-row" style="margin-top: 20px;">
+            <div>
+                <strong>Valor Líquido:</strong> <span style="font-size: 18px; color: #27ae60;">R$ {{ documento.valor_liquido|floatformat:2 }}</span>
+            </div>
+        </div>
+        
+        {% if documento.ocorrencia %}
+        <div style="margin-top: 20px;">
+            <strong>Ocorrência:</strong> {{ documento.ocorrencia.descricao }}
+        </div>
+        {% endif %}
+        
+        {% if documento.instrucao %}
+        <div style="margin-top: 20px;">
+            <strong>Instrução:</strong>
+            <p>{{ documento.instrucao|linebreaks }}</p>
+        </div>
+        {% endif %}
+        
+        <div style="margin-top: 30px;">
+            <a href="{% url 'lista_documentos' %}" class="btn btn-secondary">Voltar</a>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h2>Pagamentos</h2>
+    </div>
+    
+    {% if pagamentos %}
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Data do Pagamento</th>
+                <th>Tipo de Pagamento</th>
+                <th>Valor Pago</th>
+                <th>Observações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for pagamento in pagamentos %}
+            <tr>
+                <td>{{ pagamento.data_pagamento|date:"d/m/Y" }}</td>
+                <td>{{ pagamento.get_tipo_pagamento_display }}</td>
+                <td>R$ {{ pagamento.valor_pago|floatformat:2 }}</td>
+                <td>{{ pagamento.observacoes|default:"-" }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <p style="padding: 20px 20px 0 20px;"><strong>Total Pago:</strong> R$ {{ total_pago|floatformat:2 }}</p>
+    {% else %}
+    <p style="padding: 20px; text-align: center; color: #7f8c8d;">Nenhum pagamento registrado para este documento.</p>
+    {% endif %}
+</div>
+{% endblock %}
