@@ -3,14 +3,13 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib import messages
-from django.db.models import Q, Sum
+from django.db.models import Q, Sum, Count
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
 from datetime import datetime, timedelta
 from decimal import Decimal
 import json
-
 from . import models
 from .forms import BorderoForm
 
@@ -182,22 +181,41 @@ def lista_borderos(request):
 
 @login_required(login_url='login')
 def detalhe_bordero(request, pk):
-    """Detalhes do bordero"""
+    """Detalhes do bordero com resumo financeiro"""
     bordero = get_object_or_404(models.Bordero, pk=pk)
     documentos = models.Documento.objects.filter(bordero=bordero)
     
+    # Cálculo de totalizadores e desconto por documento
+    total_valor_bruto = Decimal('0')
+    total_liquido = Decimal('0')
+    
+    docs_com_desconto = []
+    for doc in documentos:
+        desconto = doc.valor - doc.valor_liquido
+        docs_com_desconto.append({
+            'doc': doc,
+            'desconto': desconto
+        })
+        total_valor_bruto += doc.valor
+        total_liquido += doc.valor_liquido
+    
+    total_desconto = total_valor_bruto - total_liquido
+    
     context = {
         'bordero': bordero,
-        'documentos': documentos,
-        'total_valor': documentos.aggregate(Sum('valor'))['valor__sum'] or 0,
+        'documentos': docs_com_desconto,
         'total_documentos': documentos.count(),
+        'total_valor_bruto': total_valor_bruto,
+        'total_desconto': total_desconto,
+        'total_liquido': total_liquido,
     }
     return render(request, 'factoring_app/borderos/detalhe.html', context)
 
 
+
 @login_required(login_url='login')
 def criar_bordero(request):
-    """Cria um novo bordero usando `BorderoForm` para validação."""
+    """Cria um novo bordero com seus documentos usando `BorderoForm` para validação."""
     if request.method == 'POST':
         form = BorderoForm(request.POST)
         if form.is_valid():
@@ -206,28 +224,97 @@ def criar_bordero(request):
             bordero.quantidade_titulos = 0
             bordero.save()
 
+            # Processa os documentos enviados em JSON
+            documentos_json = request.POST.get('documentos_json', '[]')
+            try:
+                documentos_data = json.loads(documentos_json)
+            except json.JSONDecodeError:
+                messages.error(request, 'Erro ao processar documentos.')
+                return redirect('detalhe_bordero', pk=bordero.id)
+
+            valor_total = Decimal('0.00')
+            quantidade_docs = 0
+
+            for doc_data in documentos_data:
+                try:
+                    # Pega ou cria o sacado
+                    sacado_nome = doc_data.get('sacado_nome')
+                    sacado_cpf_cnpj = doc_data.get('sacado_cpf_cnpj')
+                    
+                    sacado, created = models.Sacado.objects.get_or_create(
+                        cliente=bordero.cliente,
+                        cpf_cnpj=sacado_cpf_cnpj,
+                        defaults={'nome': sacado_nome}
+                    )
+                    
+                    # Se já existia, atualiza o nome se diferente
+                    if not created and sacado.nome != sacado_nome:
+                        sacado.nome = sacado_nome
+                        sacado.save()
+
+                    # Cria o documento
+                    tipo_doc_id = doc_data.get('tipo_documento')
+                    tipo_doc = models.TipoDocumento.objects.get(id=tipo_doc_id)
+                    
+                    valor = Decimal(str(doc_data.get('valor', 0)))
+                    valor_liquido = Decimal(str(doc_data.get('valor_liquido', 0)))
+                    
+                    documento = models.Documento.objects.create(
+                        bordero=bordero,
+                        tipo_documento=tipo_doc,
+                        sacado=sacado,
+                        numero_documento=doc_data.get('numero_documento'),
+                        valor=valor,
+                        data_vencimento=doc_data.get('data_vencimento'),
+                        data_emissao=doc_data.get('data_emissao'),
+                        valor_liquido=valor_liquido,
+                        status='pendente'
+                    )
+                    
+                    valor_total += valor
+                    quantidade_docs += 1
+                    
+                except Exception as e:
+                    messages.warning(request, f'Erro ao processar documento: {str(e)}')
+                    continue
+
+            # Atualiza o borderô com os totalizadores
+            bordero.valor_total = valor_total
+            bordero.quantidade_titulos = quantidade_docs
+            bordero.save()
+
+            if quantidade_docs == 0:
+                messages.warning(request, 'Borderô criado, mas nenhum documento foi adicionado.')
+            else:
+                messages.success(request, f'Borderô criado com sucesso! {quantidade_docs} documento(s) adicionado(s).')
+
             try:
                 models.LogOperacao.objects.create(
                     usuario=request.user,
                     tipo_operacao='criar',
                     tabela='Bordero',
                     id_registro=bordero.id,
-                    descricao=f'Criação de bordero: {bordero.numero}',
+                    descricao=f'Criação de bordero: {bordero.numero} com {quantidade_docs} documentos',
                 )
             except:
                 pass
 
-            messages.success(request, 'Bordero criado com sucesso!')
             return redirect('detalhe_bordero', pk=bordero.id)
         else:
             messages.error(request, 'Corrija os erros no formulário abaixo.')
     else:
         form = BorderoForm()
 
+    # Prepara os tipos de documento em JSON para o JavaScript
+    tipos_documento = models.TipoDocumento.objects.all().values('id', 'descricao')
+    tipos_documento_json = json.dumps(list(tipos_documento))
+
     context = {
         'form': form,
+        'tipos_documento_json': tipos_documento_json,
     }
     return render(request, 'factoring_app/borderos/criar.html', context)
+
 
 
 # ============ DOCUMENTOS ============
@@ -354,12 +441,12 @@ def relatorio_fluxo_caixa(request):
 def relatorio_clientes(request):
     """Relatório de clientes"""
     clientes = models.Cliente.objects.annotate(
-        total_documentos=models.Count('sacado__numero_sequencial', distinct=True),
-        saldo_total=models.Sum('saldo_devedor')
+        total_documentos=Count('sacados', distinct=True),
+        saldo_total=Sum('saldo_devedor')
     )
     
     context = {
-        'clientes': clientes.order_by('saldo_total'),
+        'clientes': clientes.order_by('-saldo_total'),
         'total_clientes': clientes.count(),
     }
     return render(request, 'factoring_app/relatorios/clientes.html', context)

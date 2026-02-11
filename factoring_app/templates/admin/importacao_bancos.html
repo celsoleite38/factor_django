@@ -1,0 +1,82 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block title %}{{ titulo }}{% endblock %}
+
+{% block content %}
+<div id="content-main">
+    <h1>{{ titulo }}</h1>
+    
+    <form method="post" enctype="multipart/form-data" style="max-width: 600px; margin: 30px auto;">
+        {% csrf_token %}
+        
+        <div style="background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 5px; padding: 20px; margin-bottom: 20px;">
+            <h3 style="margin-top: 0;">📁 Selecione o arquivo XML</h3>
+            
+            <div style="margin-bottom: 15px;">
+                <label for="id_arquivo_xml" style="display: block; margin-bottom: 5px; font-weight: bold;">{{ form.arquivo_xml.label }}</label>
+                {{ form.arquivo_xml }}
+                {% if form.arquivo_xml.help_text %}
+                <p style="margin-top: 5px; color: #666; font-size: 12px;">{{ form.arquivo_xml.help_text }}</p>
+                {% endif %}
+            </div>
+            
+            {% if form.arquivo_xml.errors %}
+            <div style="color: #721c24; background-color: #f8d7da; border: 1px solid #f5c6cb; border-radius: 4px; padding: 12px; margin-bottom: 15px;">
+                {{ form.arquivo_xml.errors }}
+            </div>
+            {% endif %}
+        </div>
+        
+        <div style="background: #d4edda; border: 1px solid #c3e6cb; border-radius: 5px; padding: 15px; margin-bottom: 20px;">
+            <h4 style="margin-top: 0; color: #155724;">📋 Formato esperado do XML:</h4>
+            <pre style="background: #f8f9fa; padding: 10px; border-radius: 3px; overflow-x: auto; color: #333;">
+&lt;bancos&gt;
+    &lt;banco&gt;
+        &lt;codigo&gt;001&lt;/codigo&gt;
+        &lt;nome&gt;Banco do Brasil&lt;/nome&gt;
+        &lt;descricao&gt;Banco Estatal&lt;/descricao&gt;
+        &lt;agencias&gt;
+            &lt;agencia&gt;
+                &lt;numero&gt;0001&lt;/numero&gt;
+                &lt;nome&gt;Agência Centro&lt;/nome&gt;
+                &lt;endereco&gt;Rua Principal, 100&lt;/endereco&gt;
+                &lt;telefone&gt;(11) 1234-5678&lt;/telefone&gt;
+                &lt;contas&gt;
+                    &lt;conta&gt;
+                        &lt;numero&gt;123456&lt;/numero&gt;
+                        &lt;tipo_conta&gt;corrente&lt;/tipo_conta&gt;
+                        &lt;saldo&gt;5000.00&lt;/saldo&gt;
+                        &lt;ativa&gt;true&lt;/ativa&gt;
+                    &lt;/conta&gt;
+                &lt;/contas&gt;
+            &lt;/agencia&gt;
+        &lt;/agencias&gt;
+    &lt;/banco&gt;
+&lt;/bancos&gt;
+            </pre>
+        </div>
+        
+        <div style="text-align: center;">
+            <button type="submit" class="button default">🔄 Importar Bancos</button>
+            <a href="{% url 'admin:factoring_app_banco_changelist' %}" class="button">Voltar</a>
+        </div>
+    </form>
+</div>
+
+<style>
+    #id_arquivo_xml {
+        padding: 10px;
+        border: 2px solid #dee2e6;
+        border-radius: 4px;
+        width: 100%;
+        font-size: 14px;
+    }
+    
+    #id_arquivo_xml:focus {
+        outline: none;
+        border-color: #80bdff;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+</style>
+{% endblock %}

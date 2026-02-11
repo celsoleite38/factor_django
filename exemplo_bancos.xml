@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bancos>
+    <banco>
+        <codigo>001</codigo>
+        <nome>Banco do Brasil S.A.</nome>
+        <descricao>Banco Estatal - Institucional</descricao>
+        <agencias>
+            <agencia>
+                <numero>0001</numero>
+                <nome>Agência Centro - São Paulo</nome>
+                <endereco>Av. Paulista, 1000 - São Paulo - SP</endereco>
+                <telefone>(11) 3333-1111</telefone>
+                <contas>
+                    <conta>
+                        <numero>123456-7</numero>
+                        <tipo_conta>corrente</tipo_conta>
+                        <saldo>50000.00</saldo>
+                        <ativa>true</ativa>
+                    </conta>
+                    <conta>
+                        <numero>123457-8</numero>
+                        <tipo_conta>poupanca</tipo_conta>
+                        <saldo>100000.00</saldo>
+                        <ativa>true</ativa>
+                    </conta>
+                </contas>
+            </agencia>
+            <agencia>
+                <numero>0002</numero>
+                <nome>Agência Vila Mariana</nome>
+                <endereco>Rua Vergueiro, 3000 - São Paulo - SP</endereco>
+                <telefone>(11) 3333-2222</telefone>
+                <contas>
+                    <conta>
+                        <numero>234567-8</numero>
+                        <tipo_conta>corrente</tipo_conta>
+                        <saldo>75000.00</saldo>
+                        <ativa>true</ativa>
+                    </conta>
+                </contas>
+            </agencia>
+        </agencias>
+    </banco>
+    <banco>
+        <codigo>033</codigo>
+        <nome>Banco Santander Brasil S.A.</nome>
+        <descricao>Banco Privado - Comercial</descricao>
+        <agencias>
+            <agencia>
+                <numero>0001</numero>
+                <nome>Agência Consolação</nome>
+                <endereco>Av. Consolação, 2000 - São Paulo - SP</endereco>
+                <telefone>(11) 4444-1111</telefone>
+                <contas>
+                    <conta>
+                        <numero>345678-9</numero>
+                        <tipo_conta>corrente</tipo_conta>
+                        <saldo>120000.00</saldo>
+                        <ativa>true</ativa>
+                    </conta>
+                </contas>
+            </agencia>
+        </agencias>
+    </banco>
+    <banco>
+        <codigo>104</codigo>
+        <nome>Caixa Econômica Federal</nome>
+        <descricao>Banco Estatal - Financiador</descricao>
+        <agencias>
+            <agencia>
+                <numero>0001</numero>
+                <nome>Agência Central</nome>
+                <endereco>Rua das Flores, 500 - Brasília - DF</endereco>
+                <telefone>(61) 5555-1111</telefone>
+                <contas>
+                    <conta>
+                        <numero>456789-0</numero>
+                        <tipo_conta>corrente</tipo_conta>
+                        <saldo>250000.00</saldo>
+                        <ativa>true</ativa>
+                    </conta>
+                </contas>
+            </agencia>
+        </agencias>
+    </banco>
+</bancos>

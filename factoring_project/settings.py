@@ -18,6 +18,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'factoring_app',
+    'import_export'
 ]
 
 MIDDLEWARE = [

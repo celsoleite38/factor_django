@@ -14,40 +14,58 @@
         <h2>Criar Bordero</h2>
     </div>
 
-    <form method="post" style="padding: 20px;">
+    <form method="post" id="borderoForm" style="padding: 20px;">
         {% csrf_token %}
         {% if form.non_field_errors %}
             <div class="errors">{{ form.non_field_errors }}</div>
         {% endif %}
-        <div class="form-row">
-            <div class="form-group">
-                <label>Número</label>
-                {{ form.numero }}
-                {{ form.numero.errors }}
+        
+        <!-- DADOS DO BORDERÔ -->
+        <div style="margin-bottom: 30px;">
+            <h3 style="border-bottom: 2px solid #007bff; padding-bottom: 10px; margin-bottom: 15px;">Dados do Borderô</h3>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Número</label>
+                    {{ form.numero }}
+                    {{ form.numero.errors }}
+                </div>
+                <div class="form-group">
+                    <label>Cliente</label>
+                    {{ form.cliente }}
+                    {{ form.cliente.errors }}
+                </div>
+                <div class="form-group">
+                    <label>Banco</label>
+                    {{ form.banco }}
+                    {{ form.banco.errors }}
+                </div>
             </div>
-            <div class="form-group">
-                <label>Cliente</label>
-                {{ form.cliente }}
-                {{ form.cliente.errors }}
-            </div>
-            <div class="form-group">
-                <label>Banco</label>
-                {{ form.banco }}
-                {{ form.banco.errors }}
+
+            <div class="form-row" style="margin-top: 10px;">
+                <div class="form-group">
+                    <label>Data de Envio</label>
+                    {{ form.data_envio }}
+                    {{ form.data_envio.errors }}
+                </div>
+                <div class="form-group" style="flex: 1;">
+                    <label>Observações</label>
+                    {{ form.observacoes }}
+                    {{ form.observacoes.errors }}
+                </div>
             </div>
         </div>
 
-        <div class="form-row" style="margin-top: 10px;">
-            <div class="form-group">
-                <label>Data de Envio</label>
-                {{ form.data_envio }}
-                {{ form.data_envio.errors }}
+        <!-- DOCUMENTOS -->
+        <div style="margin-bottom: 30px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h3 style="border-bottom: 2px solid #28a745; padding-bottom: 10px; margin: 0; flex: 1;">Documentos</h3>
+                <button type="button" class="btn btn-success" id="addDocumentBtn">+ Adicionar Documento</button>
             </div>
-            <div class="form-group" style="flex: 1;">
-                <label>Observações</label>
-                {{ form.observacoes }}
-                {{ form.observacoes.errors }}
+            
+            <div id="documentosContainer" style="border: 1px solid #dee2e6; border-radius: 5px; padding: 15px;">
+                <p style="text-align: center; color: #6c757d;">Nenhum documento adicionado. Clique em "Adicionar Documento" para começar.</p>
             </div>
+            <input type="hidden" id="documentosJSON" name="documentos_json" value="[]">
         </div>
 
         <div style="margin-top: 20px;">
@@ -56,4 +74,313 @@
         </div>
     </form>
 </div>
+
+<style>
+    .documento-item {
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 5px;
+        padding: 15px;
+        margin-bottom: 15px;
+        position: relative;
+    }
+
+    .documento-item .remove-btn {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+    }
+
+    .documento-header {
+        font-weight: bold;
+        color: #495057;
+        margin-bottom: 10px;
+        padding-right: 40px;
+    }
+
+    .documento-fields {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+    }
+
+    .document-input-group {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .document-input-group label {
+        font-weight: 500;
+        margin-bottom: 5px;
+        color: #333;
+    }
+
+    .document-input-group input,
+    .document-input-group select {
+        padding: 8px;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        font-size: 14px;
+    }
+
+    .document-input-group input:focus,
+    .document-input-group select:focus {
+        outline: none;
+        border-color: #80bdff;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+</style>
+
+<script>
+    let tiposDocumento = {{ tipos_documento_json|safe }};
+    let documentoIndex = 0;
+
+    document.getElementById('addDocumentBtn').addEventListener('click', function() {
+        adicionarDocumento();
+    });
+
+    function adicionarDocumento(data = null) {
+        const container = document.getElementById('documentosContainer');
+        
+        // Remove a mensagem de "nenhum documento" na primeira adição
+        if (container.children.length === 1 && container.querySelector('p')) {
+            container.innerHTML = '';
+        }
+
+        const index = documentoIndex++;
+        let docHTML = `
+            <div class="documento-item" id="documento-${index}">
+                <button type="button" class="btn btn-danger btn-sm remove-btn" onclick="removerDocumento(${index})">
+                    × Remover
+                </button>
+                
+                <div class="documento-header">Documento #${index + 1}</div>
+                
+                <div class="documento-fields">
+                    <div class="document-input-group">
+                        <label>Tipo de Documento <span style="color: red;">*</span></label>
+                        <select name="documento_tipo_${index}" class="tipo-documento" required>
+                            <option value="">-- Selecione --</option>`;
+        
+        tiposDocumento.forEach(tipo => {
+            docHTML += `<option value="${tipo.id}" ${data && data.tipo_documento == tipo.id ? 'selected' : ''}>${tipo.descricao}</option>`;
+        });
+
+        docHTML += `
+                        </select>
+                    </div>
+
+                    <div class="document-input-group">
+                        <label>Número do Documento <span style="color: red;">*</span></label>
+                        <input type="text" name="documento_numero_${index}" class="numero-documento" 
+                               placeholder="Ex: 12345" 
+                               value="${data ? data.numero_documento : ''}" required>
+                    </div>
+
+                    <div class="document-input-group">
+                        <label>Nome do Devedor <span style="color: red;">*</span></label>
+                        <input type="text" name="documento_sacado_nome_${index}" class="sacado-nome" 
+                               placeholder="Nome completo" 
+                               value="${data ? data.sacado_nome : ''}" required>
+                    </div>
+
+                    <div class="document-input-group">
+                        <label>CPF/CNPJ Devedor <span style="color: red;">*</span></label>
+                        <input type="text" name="documento_sacado_cpf_${index}" class="sacado-cpf" 
+                               placeholder="000.000.000-00" 
+                               value="${data ? data.sacado_cpf_cnpj : ''}" required>
+                    </div>
+
+                    <div class="document-input-group">
+                        <label>Valor <span style="color: red;">*</span></label>
+                        <input type="number" name="documento_valor_${index}" class="valor-documento" 
+                               placeholder="0.00" step="0.01" min="0" 
+                               value="${data ? data.valor : ''}" required>
+                    </div>
+
+                    <div class="document-input-group">
+                        <label>Data de Emissão <span style="color: red;">*</span></label>
+                        <input type="date" name="documento_emissao_${index}" class="emissao-documento" 
+                               value="${data ? data.data_emissao : ''}" required>
+                    </div>
+
+                    <div class="document-input-group">
+                        <label>Data de Vencimento <span style="color: red;">*</span></label>
+                        <input type="date" name="documento_vencimento_${index}" class="vencimento-documento" 
+                               value="${data ? data.data_vencimento : ''}" required>
+                    </div>
+
+                    <div class="document-input-group">
+                        <label>Tipo de Desconto</label>
+                        <select name="documento_tipo_desconto_${index}" class="tipo-desconto">
+                            <option value="fixo">Valor Fixo (R$)</option>
+                            <option value="percentual">Percentual ao Mês (%)</option>
+                        </select>
+                    </div>
+
+                    <div class="document-input-group desconto-fixo-group">
+                        <label>Desconto (R$)</label>
+                        <input type="number" name="documento_desconto_${index}" class="desconto-documento" 
+                               placeholder="0.00" step="0.01" min="0" 
+                               value="${data ? data.desconto : '0'}">
+                    </div>
+
+                    <div class="document-input-group desconto-percentual-group" style="display: none;">
+                        <label>Taxa Mensal (%)</label>
+                        <input type="number" name="documento_taxa_mensal_${index}" class="taxa-mensal-documento" 
+                               placeholder="0.00" step="0.01" min="0" 
+                               value="${data ? data.taxa_mensal : '0'}">
+                    </div>
+
+                    <div class="document-input-group" style="background-color: #e8f4f8; padding: 10px; border-radius: 4px; border: 1px solid #b3d9e8;">
+                        <label style="color: #0066cc; font-weight: bold;">Desconto Calculado</label>
+                        <div style="font-size: 18px; font-weight: bold; color: #0066cc; text-align: right;">
+                            <span class="desconto-calculado-display">R$ 0,00</span>
+                            <span class="meses-info" style="display: none; font-size: 12px; color: #666; margin-top: 5px; display: block;"></span>
+                        </div>
+                        <input type="hidden" name="documento_desconto_calculado_${index}" class="desconto-calculado" value="0">
+                    </div>
+
+                    <div class="document-input-group">
+                        <label>Valor Líquido <span style="color: red;">*</span></label>
+                        <input type="number" name="documento_liquido_${index}" class="liquido-documento" 
+                               placeholder="0.00" step="0.01" min="0" 
+                               value="${data ? data.valor_liquido : ''}" required readonly 
+                               style="font-weight: bold; background-color: #f0f0f0;">
+                    </div>
+                </div>
+            </div>
+        `;
+
+        container.insertAdjacentHTML('beforeend', docHTML);
+        
+        // Adiciona listeners para cálculo automático com desconto inteligente
+        const docItem = document.getElementById(`documento-${index}`);
+        const valorInput = docItem.querySelector('.valor-documento');
+        const descontoFixoInput = docItem.querySelector('.desconto-documento');
+        const taxaMensalInput = docItem.querySelector('.taxa-mensal-documento');
+        const tipoDescontoSelect = docItem.querySelector('.tipo-desconto');
+        const descontoFixoGroup = docItem.querySelector('.desconto-fixo-group');
+        const descontoPercentualGroup = docItem.querySelector('.desconto-percentual-group');
+        const emissaoInput = docItem.querySelector('.emissao-documento');
+        const vencimentoInput = docItem.querySelector('.vencimento-documento');
+        const liquidoInput = docItem.querySelector('.liquido-documento');
+        const descontoCalculadoDisplay = docItem.querySelector('.desconto-calculado-display');
+        const mesesInfo = docItem.querySelector('.meses-info');
+        const descontoCalculadoHidden = docItem.querySelector('.desconto-calculado');
+        
+        // Função para calcular meses entre duas datas
+        const calcularMeses = (dataEmissao, dataVencimento) => {
+            if (!dataEmissao || !dataVencimento) return 0;
+            const emissao = new Date(dataEmissao);
+            const vencimento = new Date(dataVencimento);
+            const meses = (vencimento.getFullYear() - emissao.getFullYear()) * 12 + 
+                         (vencimento.getMonth() - emissao.getMonth());
+            return Math.max(0, meses);
+        };
+        
+        // Função principal de cálculo
+        const recalcularDesconto = () => {
+            const valor = parseFloat(valorInput.value) || 0;
+            const emissao = emissaoInput.value;
+            const vencimento = vencimentoInput.value;
+            let desconto = 0;
+            let meses = 0;
+            
+            if (tipoDescontoSelect.value === 'fixo') {
+                // Desconto fixo em reais
+                desconto = parseFloat(descontoFixoInput.value) || 0;
+                mesesInfo.style.display = 'none';
+            } else {
+                // Desconto percentual com cálculo de meses
+                const taxaMensal = parseFloat(taxaMensalInput.value) || 0;
+                meses = calcularMeses(emissao, vencimento);
+                desconto = (valor * taxaMensal / 100) * (meses > 0 ? meses : 1);
+                
+                if (meses > 0) {
+                    mesesInfo.textContent = `(${meses} mês${meses > 1 ? 'es' : ''} × ${taxaMensal}%)`;
+                    mesesInfo.style.display = 'block';
+                }
+            }
+            
+            const liquido = valor - desconto;
+            descontoCalculadoDisplay.textContent = `R$ ${desconto.toFixed(2).replace('.', ',')}`;
+            descontoCalculadoHidden.value = desconto.toFixed(2);
+            liquidoInput.value = Math.max(0, liquido).toFixed(2);
+        };
+        
+        // Toggle entre desconto fixo e percentual
+        tipoDescontoSelect.addEventListener('change', () => {
+            if (tipoDescontoSelect.value === 'fixo') {
+                descontoFixoGroup.style.display = 'block';
+                descontoPercentualGroup.style.display = 'none';
+            } else {
+                descontoFixoGroup.style.display = 'none';
+                descontoPercentualGroup.style.display = 'block';
+            }
+            recalcularDesconto();
+        });
+        
+        // Event listeners para recálculo
+        valorInput.addEventListener('change', recalcularDesconto);
+        valorInput.addEventListener('keyup', recalcularDesconto);
+        descontoFixoInput.addEventListener('change', recalcularDesconto);
+        descontoFixoInput.addEventListener('keyup', recalcularDesconto);
+        taxaMensalInput.addEventListener('change', recalcularDesconto);
+        taxaMensalInput.addEventListener('keyup', recalcularDesconto);
+        emissaoInput.addEventListener('change', recalcularDesconto);
+        vencimentoInput.addEventListener('change', recalcularDesconto);
+        
+        // Cálculo inicial
+        recalcularDesconto();
+    }
+
+    function removerDocumento(index) {
+        const doc = document.getElementById(`documento-${index}`);
+        if (doc) {
+            doc.remove();
+            
+            // Se não houver mais documentos, mostra mensagem
+            const container = document.getElementById('documentosContainer');
+            if (container.children.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #6c757d;">Nenhum documento adicionado. Clique em "Adicionar Documento" para começar.</p>';
+            }
+        }
+    }
+
+    // Ao enviar o formulário, serializa os documentos em JSON
+    document.getElementById('borderoForm').addEventListener('submit', function(e) {
+        const container = document.getElementById('documentosContainer');
+        const documentos = [];
+
+        // Coleta todos os documentos do formulário
+        const items = container.querySelectorAll('.documento-item');
+        
+        if (items.length === 0) {
+            alert('Adicione pelo menos um documento antes de criar o borderô.');
+            e.preventDefault();
+            return;
+        }
+
+        items.forEach((item, idx) => {
+            const doc = {
+                tipo_documento: item.querySelector('.tipo-documento').value,
+                numero_documento: item.querySelector('.numero-documento').value,
+                sacado_nome: item.querySelector('.sacado-nome').value,
+                sacado_cpf_cnpj: item.querySelector('.sacado-cpf').value,
+                valor: item.querySelector('.valor-documento').value,
+                tipo_desconto: item.querySelector('.tipo-desconto').value,
+                desconto: item.querySelector('.desconto-documento').value,
+                taxa_mensal: item.querySelector('.taxa-mensal-documento').value,
+                desconto_calculado: item.querySelector('.desconto-calculado').value,
+                data_vencimento: item.querySelector('.vencimento-documento').value,
+                data_emissao: item.querySelector('.emissao-documento').value,
+                valor_liquido: item.querySelector('.liquido-documento').value,
+            };
+            documentos.push(doc);
+        });
+
+        document.getElementById('documentosJSON').value = JSON.stringify(documentos);
+    });
+</script>
 {% endblock %}
