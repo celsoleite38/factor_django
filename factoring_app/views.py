@@ -12,6 +12,7 @@ from decimal import Decimal
 import json
 
 from . import models
+from .forms import BorderoForm
 
 
 # ============ AUTENTICAÇÃO ============
@@ -192,6 +193,41 @@ def detalhe_bordero(request, pk):
         'total_documentos': documentos.count(),
     }
     return render(request, 'factoring_app/borderos/detalhe.html', context)
+
+
+@login_required(login_url='login')
+def criar_bordero(request):
+    """Cria um novo bordero usando `BorderoForm` para validação."""
+    if request.method == 'POST':
+        form = BorderoForm(request.POST)
+        if form.is_valid():
+            bordero = form.save(commit=False)
+            bordero.valor_total = 0
+            bordero.quantidade_titulos = 0
+            bordero.save()
+
+            try:
+                models.LogOperacao.objects.create(
+                    usuario=request.user,
+                    tipo_operacao='criar',
+                    tabela='Bordero',
+                    id_registro=bordero.id,
+                    descricao=f'Criação de bordero: {bordero.numero}',
+                )
+            except:
+                pass
+
+            messages.success(request, 'Bordero criado com sucesso!')
+            return redirect('detalhe_bordero', pk=bordero.id)
+        else:
+            messages.error(request, 'Corrija os erros no formulário abaixo.')
+    else:
+        form = BorderoForm()
+
+    context = {
+        'form': form,
+    }
+    return render(request, 'factoring_app/borderos/criar.html', context)
 
 
 # ============ DOCUMENTOS ============

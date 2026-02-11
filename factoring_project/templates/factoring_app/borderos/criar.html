@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block title %}Criar Bordero - Factoring System{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+    <a href="{% url 'dashboard' %}">Dashboard</a> /
+    <a href="{% url 'lista_borderos' %}">Borderos</a> /
+    <span>Criar</span>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h2>Criar Bordero</h2>
+    </div>
+
+    <form method="post" style="padding: 20px;">
+        {% csrf_token %}
+        {% if form.non_field_errors %}
+            <div class="errors">{{ form.non_field_errors }}</div>
+        {% endif %}
+        <div class="form-row">
+            <div class="form-group">
+                <label>Número</label>
+                {{ form.numero }}
+                {{ form.numero.errors }}
+            </div>
+            <div class="form-group">
+                <label>Cliente</label>
+                {{ form.cliente }}
+                {{ form.cliente.errors }}
+            </div>
+            <div class="form-group">
+                <label>Banco</label>
+                {{ form.banco }}
+                {{ form.banco.errors }}
+            </div>
+        </div>
+
+        <div class="form-row" style="margin-top: 10px;">
+            <div class="form-group">
+                <label>Data de Envio</label>
+                {{ form.data_envio }}
+                {{ form.data_envio.errors }}
+            </div>
+            <div class="form-group" style="flex: 1;">
+                <label>Observações</label>
+                {{ form.observacoes }}
+                {{ form.observacoes.errors }}
+            </div>
+        </div>
+
+        <div style="margin-top: 20px;">
+            <button type="submit" class="btn btn-primary">Criar Bordero</button>
+            <a href="{% url 'lista_borderos' %}" class="btn btn-secondary">Cancelar</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

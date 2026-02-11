@@ -14,6 +14,7 @@ urlpatterns = [
     
     # Borderos
     path('borderos/', views.lista_borderos, name='lista_borderos'),
+    path('borderos/criar/', views.criar_bordero, name='criar_bordero'),
     path('borderos/<int:pk>/', views.detalhe_bordero, name='detalhe_bordero'),
     
     # Documentos
